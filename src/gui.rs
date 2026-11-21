@@ -28,6 +28,7 @@ const ACCENT: Color32 = Color32::from_rgb(10, 132, 255);
 const GOOD: Color32 = Color32::from_rgb(48, 209, 88);
 const BAD: Color32 = Color32::from_rgb(255, 69, 58);
 const WARN: Color32 = Color32::from_rgb(255, 214, 10);
+const PRIMARY_TEXT: Color32 = Color32::from_gray(235);
 const MUTED_TEXT: Color32 = Color32::from_gray(150);
 const MAX_LOG: usize = 400;
 
@@ -83,7 +84,12 @@ fn show_native(hwnd: &AtomicIsize) {
 }
 
 fn style(ctx: &egui::Context) {
-    ctx.set_visuals(egui::Visuals::dark());
+    // The panel uses a fixed dark background. Lock the matching theme so a
+    // later OS theme event cannot switch its labels to light-theme black.
+    ctx.set_theme(egui::Theme::Dark);
+    let mut visuals = egui::Visuals::dark();
+    visuals.override_text_color = Some(PRIMARY_TEXT);
+    ctx.set_visuals(visuals);
     ctx.style_mut(|s| {
         s.spacing.item_spacing = egui::vec2(8.0, 8.0);
         s.spacing.button_padding = egui::vec2(12.0, 6.0);
