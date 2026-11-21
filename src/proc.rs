@@ -43,9 +43,21 @@ pub fn ffmpeg_version(candidate: &Path) -> Option<String> {
     out.status.success().then(|| String::from_utf8_lossy(&out.stdout).lines().next().unwrap_or("ffmpeg").to_string())
 }
 
-/// Locate a working ffmpeg: the explicit path if given, otherwise `ffmpeg` on PATH.
+/// Default ffmpeg location: bundled beside this executable, then `ffmpeg` on PATH.
+pub fn default_ffmpeg() -> PathBuf {
+    #[cfg(windows)]
+    if let Ok(exe) = std::env::current_exe() {
+        let bundled = exe.with_file_name("ffmpeg.exe");
+        if bundled.is_file() {
+            return bundled;
+        }
+    }
+    PathBuf::from("ffmpeg")
+}
+
+/// Locate a working ffmpeg: the explicit path if given, otherwise bundled/PATH.
 pub fn find_ffmpeg(explicit: Option<PathBuf>) -> Result<PathBuf> {
-    let candidate = explicit.unwrap_or_else(|| PathBuf::from("ffmpeg"));
+    let candidate = explicit.unwrap_or_else(default_ffmpeg);
     match command(&candidate).arg("-version").output() {
         Ok(o) if o.status.success() => Ok(candidate),
         _ => bail!(

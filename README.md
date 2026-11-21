@@ -33,7 +33,7 @@ Audio also self-heals on its own: if the buffer ever drifts too far behind, the 
     --headless        Run the receiver without the control panel
 -n, --name <NAME>     Name shown in the iOS Screen Mirroring list (saved)
 -p, --port <PORT>     Control port (default 7000)
-    --ffmpeg <PATH>   ffmpeg to use (default: the one on PATH)
+    --ffmpeg <PATH>   ffmpeg to use (default: bundled copy, then PATH)
     --muted           Start muted
 -v, --verbose         Debug logging
 ```
@@ -44,12 +44,16 @@ Delete it to appear as a brand-new device.
 ## Requirements
 
 * Rust (stable) and a C compiler (the vendored FairPlay code is C; MinGW gcc or MSVC both work).
-* `ffmpeg` on `PATH` (`winget install Gyan.FFmpeg`). It decodes H.264 video and AAC-ELD audio.
+* Either use the bundled release, or put `ffmpeg` on `PATH` (`winget install Gyan.FFmpeg`). It decodes H.264 video and AAC-ELD audio.
 * iPhone/iPad on the same network. Allow KPlay through the Windows firewall on first run (private networks).
 
 ```
 cargo run --release -- --name "My PC"
 ```
+
+GitHub Releases provide two Windows downloads: a small standalone KPlay archive
+that uses an existing ffmpeg installation, and a larger `-bundled-ffmpeg` archive
+that works without installing ffmpeg separately.
 
 ## How it works
 

@@ -179,12 +179,12 @@ impl Panel {
 
     fn check_ffmpeg(&mut self) {
         let path = self.edit.settings.ffmpeg.trim();
-        let candidate = if path.is_empty() { "ffmpeg".into() } else { std::path::PathBuf::from(path) };
+        let candidate = if path.is_empty() { proc::default_ffmpeg() } else { std::path::PathBuf::from(path) };
         self.ffmpeg = proc::ffmpeg_version(&candidate)
             .map(|v| v.replace("ffmpeg version ", "ffmpeg ").split(" Copyright").next().unwrap_or("ffmpeg").to_string())
             .ok_or_else(|| {
                 if path.is_empty() {
-                    "ffmpeg not found on PATH".to_string()
+                    "ffmpeg not found beside KPlay or on PATH".to_string()
                 } else {
                     "this file does not run as ffmpeg".to_string()
                 }

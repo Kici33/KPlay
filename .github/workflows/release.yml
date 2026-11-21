@@ -29,15 +29,38 @@ jobs:
           Copy-Item target/release/kplay.exe dist/KPlay.exe
           Compress-Archive -Path dist/KPlay.exe -DestinationPath KPlay-windows-x86_64.zip
 
+      - name: Package executable with FFmpeg
+        shell: pwsh
+        run: |
+          Invoke-WebRequest `
+            -Uri https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip `
+            -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip -DestinationPath ffmpeg-dist
+          $ffmpeg = Get-ChildItem ffmpeg-dist -Filter ffmpeg.exe -Recurse | Select-Object -First 1
+          if (-not $ffmpeg) { throw "ffmpeg.exe was not found in the downloaded archive" }
+
+          New-Item -ItemType Directory -Path bundled
+          Copy-Item target/release/kplay.exe bundled/KPlay.exe
+          Copy-Item $ffmpeg.FullName bundled/ffmpeg.exe
+          @"
+          KPlay includes FFmpeg from https://www.gyan.dev/ffmpeg/builds/
+          FFmpeg source and licensing information: https://ffmpeg.org/
+          "@ | Set-Content bundled/THIRD_PARTY_NOTICES.txt
+          Compress-Archive -Path bundled/* -DestinationPath KPlay-windows-x86_64-bundled-ffmpeg.zip
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: KPlay-windows-x86_64
-          path: KPlay-windows-x86_64.zip
+          path: |
+            KPlay-windows-x86_64.zip
+            KPlay-windows-x86_64-bundled-ffmpeg.zip
 
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: KPlay-windows-x86_64.zip
+          files: |
+            KPlay-windows-x86_64.zip
+            KPlay-windows-x86_64-bundled-ffmpeg.zip
